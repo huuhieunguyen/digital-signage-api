@@ -1,100 +1,72 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Data;
-using Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using CMS.Data;
+using CMS.Models;
+using CMS.Services;
 
-
-[Route("API/[controller]")]
-[ApiController]
-public class ContentItemController : ControllerBase
+namespace CMS.Controllers
 {
-    private readonly CmsDbContext _context;
-
-    public ContentItemController(CmsDbContext context)
+    [Route("api/v1/content-items")]
+    [ApiController]
+    public class ContentItemController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly IContentItemService _contentItemService;
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<ContentItem>>> GetContentItems()
-    {
-        return await _context.ContentItems.ToListAsync();
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<ContentItem>> GetContentItem(int id)
-    {
-        var contentItem = await _context.ContentItems.FindAsync(id);
-
-        if (contentItem == null)
+        public ContentItemController(IContentItemService contentItemService)
         {
-            return NotFound();
+            _contentItemService = contentItemService;
         }
 
-        return contentItem;
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<ContentItem>> PostContentItem(ContentItem contentItem)
-    {
-        contentItem.CreatedAt = DateTime.Now;
-        _context.ContentItems.Add(contentItem);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction("GetContentItem", new { id = contentItem.Id }, contentItem);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutContentItem(int id, ContentItem contentItem)
-    {
-        if (id != contentItem.Id)
+        [HttpGet]
+        public ActionResult GetContentItems()
         {
-            return BadRequest();
+            var contents = _contentItemService.GetAllContentItems();
+            return Ok(contents);
         }
 
-        _context.Entry(contentItem).State = EntityState.Modified;
-
-        try
+        [HttpGet("{id}", Name = "GetContentItemById")]
+        public ActionResult GetContentItem(int id)
         {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!ContentItemExists(id))
-            {
+            var content = _contentItemService.GetContentItem(id);
+            if (content == null)
                 return NotFound();
-            }
-            else
-            {
-                throw;
-            }
+
+            return Ok(content);
         }
 
-        return NoContent();
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteContentItem(int id)
-    {
-        var contentItem = await _context.ContentItems.FindAsync(id);
-
-        if (contentItem == null)
+        [HttpPost]
+        public ActionResult CreateContentItem(ContentItem contentItem)
         {
-            return NotFound();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var content = _contentItemService.CreateContentItem(contentItem);
+            return CreatedAtRoute("GetContentItemById", new { id = contentItem.Id }, content);
         }
 
-        _context.ContentItems.Remove(contentItem);
-        await _context.SaveChangesAsync();
+        [HttpPut]
+        [Route("{id}")]
+        public ActionResult UpdateContentItem(int id, ContentItem contentItem)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-        return NoContent();
-    }
+            var content = _contentItemService.UpdateContentItem(id, contentItem);
+            if (content == null)
+                return NotFound();
 
-    private bool ContentItemExists(int id)
-    {
-        return _context.ContentItems.Any(e => e.Id == id);
+            return Ok(content);
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public ActionResult DeleteContentItem(int id)
+        {
+            var deletedContent = _contentItemService.DeleteContentItem(id);
+            if (deletedContent == null)
+                return NotFound();
+
+            return Ok(deletedContent);
+        }
     }
 }

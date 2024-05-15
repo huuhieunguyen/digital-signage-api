@@ -1,12 +1,20 @@
-using Models;
+using CMS.Models;
 using Microsoft.EntityFrameworkCore;
-using Data;
+using CMS.Data;
+using CMS.Repositories;
+using CMS.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<CmsDbContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IContentItemRepository, ContentItemRepository>();
+builder.Services.AddScoped<IContentItemService, ContentItemService>();
+
+builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
+builder.Services.AddScoped<IPlaylistService, PlaylistService>();
 
 builder.Services.AddControllers();
 
