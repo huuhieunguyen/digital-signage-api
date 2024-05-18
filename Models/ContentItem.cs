@@ -15,7 +15,7 @@ namespace CMS.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
-        public ICollection<Playlist> Playlists { get; set; }
+        // public ICollection<Playlist> Playlists { get; set; }
         public ICollection<PlaylistContentItem> PlaylistContentItems { get; set; }
     }
     public enum ResourceType

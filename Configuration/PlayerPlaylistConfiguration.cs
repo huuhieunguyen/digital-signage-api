@@ -8,7 +8,7 @@ namespace CMS.Configuration
     {
         public void Configure(EntityTypeBuilder<PlayerPlaylist> builder)
         {
-            builder.ToTable("player_playlist");
+            builder.ToTable("player_playlists");
 
             builder.HasKey(pp => new { pp.PlayerId, pp.PlaylistId });
 

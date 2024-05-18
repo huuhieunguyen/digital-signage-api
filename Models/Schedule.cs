@@ -6,8 +6,8 @@ namespace CMS.Models
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public string? DaysOfWeek { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
 
         // Foreign key
         public int PlayerId { get; set; }

@@ -30,7 +30,7 @@ namespace CMS.Data
             modelBuilder.ApplyConfiguration(new LabelConfiguration());
             modelBuilder.ApplyConfiguration(new PlaylistConfiguration());
             modelBuilder.ApplyConfiguration(new ContentItemConfiguration());
-            modelBuilder.ApplyConfiguration(new ScheduleConfiguration());
+            // modelBuilder.ApplyConfiguration(new ScheduleConfiguration());
             modelBuilder.ApplyConfiguration(new PlaylistLabelConfiguration());
             modelBuilder.ApplyConfiguration(new PlayerLabelConfiguration());
             modelBuilder.ApplyConfiguration(new PlaylistContentItemConfiguration());

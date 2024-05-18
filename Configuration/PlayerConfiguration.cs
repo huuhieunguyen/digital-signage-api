@@ -22,8 +22,8 @@ namespace CMS.Configuration
             builder.Property(p => p.Location)
                 .HasMaxLength(50);
 
-            builder.Property(p => p.Status)
-                .HasConversion<string>();
+            // builder.Property(p => p.Status)
+            //     .HasConversion<string>();
 
             builder.Property(p => p.LastActiveDateTime)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -55,9 +55,12 @@ namespace CMS.Configuration
                 .WithOne(pp => pp.Player)
                 .HasForeignKey(pp => pp.PlayerId);
 
-            builder.HasMany(p => p.Labels)
-                .WithMany(l => l.Players);
-
+            // a player can have one or many labels
+            // and a label can be associated with one or many players
+            // so we need a join table, which is PlayerLabel.
+            builder.HasMany(p => p.PlayerLabels)
+                .WithOne(pl => pl.Player)
+                .HasForeignKey(pl => pl.PlayerId);
         }
     }
 }

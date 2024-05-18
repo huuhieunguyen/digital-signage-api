@@ -5,7 +5,7 @@ namespace CMS.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public string? Location { get; set; }
-        public StatusType? Status { get; set; }
+        // public StatusType? Status { get; set; }
         public DateTime? LastActiveDateTime { get; set; }
         public string? IPAddress { get; set; }
         public string? VirtualUrl { get; set; }
@@ -16,16 +16,15 @@ namespace CMS.Models
 
         // Navigation properties
         // public ICollection<Playlist> Playlists { get; set; }
-        public ICollection<Label> Labels { get; set; }
+        // public ICollection<Label> Labels { get; set; }
         public ICollection<PlayerPlaylist> PlayerPlaylists { get; set; }
-        // public ICollection<Playlist> Playlists { get; set; } = new List<Playlist>();
-        // public ICollection<Label> Labels { get; set; } = new List<Label>();
+        public ICollection<PlayerLabel> PlayerLabels { get; set; }
     }
-    public enum StatusType
-    {
-        Online,
-        Offline,
-        OutOfSync,
-        Inactive
-    }
+    // public enum StatusType
+    // {
+    //     Online,
+    //     Offline,
+    //     OutOfSync,
+    //     Inactive
+    // }
 }

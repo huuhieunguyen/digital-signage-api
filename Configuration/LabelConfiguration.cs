@@ -24,8 +24,19 @@ namespace CMS.Configuration
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .ValueGeneratedOnAddOrUpdate();
 
-            builder.HasMany(l => l.Players)
-                .WithMany(p => p.Labels);
+            // a label can have one or many playlists
+            // and a playlist can be associated with one or many labels
+            // so we need a join table, which is PlaylistLabel.
+            builder.HasMany(l => l.PlaylistLabels)
+                .WithOne(pl => pl.Label)
+                .HasForeignKey(pl => pl.LabelId);
+
+            // a label can have one or many players
+            // and a player can be associated with one or many labels
+            // so we need a join table, which is PlayerLabel.
+            builder.HasMany(l => l.PlayerLabels)
+                .WithOne(pl => pl.Label)
+                .HasForeignKey(pl => pl.LabelId);
         }
     }
 }

@@ -8,13 +8,16 @@ namespace CMS.Configuration
     {
         public void Configure(EntityTypeBuilder<Playlist> builder)
         {
-            builder.ToTable("playlist");
+            builder.ToTable("playlists");
 
             builder.HasKey(pl => pl.Id);
 
             builder.Property(pl => pl.Title)
                 .IsRequired()
                 .HasMaxLength(255);
+
+            builder.Property(pl => pl.Enabled)
+                .HasDefaultValue(true);
 
             builder.Property(pl => pl.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
@@ -27,6 +30,10 @@ namespace CMS.Configuration
             builder.HasMany(pl => pl.PlayerPlaylists)
                 .WithOne(pp => pp.Playlist)
                 .HasForeignKey(pp => pp.PlaylistId);
+
+            builder.HasMany(pl => pl.PlaylistContentItems)
+                .WithOne(pci => pci.Playlist)
+                .HasForeignKey(pci => pci.PlaylistId);
         }
     }
 }
