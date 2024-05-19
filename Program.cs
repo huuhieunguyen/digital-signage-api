@@ -19,6 +19,9 @@ builder.Services.AddScoped<IPlayerService, PlayerService>();
 // builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
 // builder.Services.AddScoped<IPlaylistService, PlaylistService>();
 
+builder.Services.AddScoped<ILabelRepository, LabelRepository>();
+builder.Services.AddScoped<ILabelService, LabelService>();
+
 builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
