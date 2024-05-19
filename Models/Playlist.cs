@@ -9,10 +9,6 @@ namespace CMS.Models
         public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
-        // public ICollection<Player> Players { get; set; }
-        // public ICollection<ContentItem> ContentItems { get; set; }
-        // public ICollection<Label> Labels { get; set; }
-
         public ICollection<PlayerPlaylist> PlayerPlaylists { get; set; }
         public ICollection<PlaylistContentItem> PlaylistContentItems { get; set; }
         public ICollection<PlaylistLabel> PlaylistLabels { get; set; }

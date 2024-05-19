@@ -13,8 +13,11 @@ builder.Services.AddDbContext<CmsDbContext>(options =>
 builder.Services.AddScoped<IContentItemRepository, ContentItemRepository>();
 builder.Services.AddScoped<IContentItemService, ContentItemService>();
 
-builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
-builder.Services.AddScoped<IPlaylistService, PlaylistService>();
+builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
+builder.Services.AddScoped<IPlayerService, PlayerService>();
+
+// builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
+// builder.Services.AddScoped<IPlaylistService, PlaylistService>();
 
 builder.Services.AddControllers();
 
