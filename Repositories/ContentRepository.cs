@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using CMS.Data;
 using CMS.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CMS.Repositories
 {
@@ -13,35 +14,47 @@ namespace CMS.Repositories
             _dbContext = dbContext;
         }
 
-        public IEnumerable<ContentItem> GetAllContentItems()
+        public async Task<IEnumerable<ContentItem>> GetAllContentItemsAsync()
         {
-            return _dbContext.ContentItems.ToList();
+            return await _dbContext.ContentItems
+                .Include(ci => ci.PlaylistContentItems)
+                .ToListAsync();
         }
 
-        public ContentItem GetContentItem(int id)
+        public async Task<ContentItem> GetContentItemByIdAsync(int contentItemId)
         {
-            return _dbContext.ContentItems.FirstOrDefault(c => c.Id == id);
+            return await _dbContext.ContentItems
+                .Include(ci => ci.PlaylistContentItems)
+                .FirstOrDefaultAsync(ci => ci.Id == contentItemId);
         }
 
-        public ContentItem CreateContentItem(ContentItem contentItem)
+        public async Task<ContentItem> AddContentItemAsync(ContentItem contentItem)
         {
             _dbContext.ContentItems.Add(contentItem);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
             return contentItem;
         }
 
-        public ContentItem UpdateContentItem(ContentItem contentItem)
+        public async Task<ContentItem> UpdateContentItemAsync(ContentItem contentItem)
         {
-            _dbContext.ContentItems.Update(contentItem);
-            _dbContext.SaveChanges();
+            _dbContext.Entry(contentItem).State = EntityState.Modified;
+            await _dbContext.SaveChangesAsync();
             return contentItem;
         }
 
-        public ContentItem DeleteContentItem(ContentItem contentItem)
+        public async Task DeleteContentItemAsync(int contentItemId)
         {
-            _dbContext.ContentItems.Remove(contentItem);
-            _dbContext.SaveChanges();
-            return contentItem;
+            var contentItem = await _dbContext.ContentItems.FindAsync(contentItemId);
+            if (contentItem != null)
+            {
+                _dbContext.ContentItems.Remove(contentItem);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
+        public async Task<bool> ContentItemExistsAsync(int contentItemId)
+        {
+            return await _dbContext.ContentItems.AnyAsync(ci => ci.Id == contentItemId);
         }
     }
 }

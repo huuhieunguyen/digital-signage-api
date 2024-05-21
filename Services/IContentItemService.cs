@@ -4,10 +4,10 @@ namespace CMS.Services
 {
     public interface IContentItemService
     {
-        IEnumerable<ContentItem> GetAllContentItems();
-        ContentItem GetContentItem(int id);
-        ContentItem CreateContentItem(ContentItem requestModel);
-        ContentItem UpdateContentItem(int id, ContentItem requestModel);
-        ContentItem DeleteContentItem(int id);
+        Task<IEnumerable<ContentItem>> GetAllContentItemsAsync();
+        Task<ContentItem> GetContentItemByIdAsync(int contentItemId);
+        Task<ContentItem> AddContentItemAsync(ContentItem contentItem, IFormFile file);
+        Task<ContentItem> UpdateContentItemAsync(ContentItem contentItem);
+        Task DeleteContentItemAsync(int contentItemId);
     }
 }

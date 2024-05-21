@@ -17,8 +17,9 @@ namespace CMS.Models
         // Navigation properties
         // public ICollection<Playlist> Playlists { get; set; }
         // public ICollection<Label> Labels { get; set; }
-        public ICollection<PlayerPlaylist> PlayerPlaylists { get; set; }
+        // public ICollection<PlayerPlaylist> PlayerPlaylists { get; set; }
         public ICollection<PlayerLabel> PlayerLabels { get; set; }
+        public ICollection<Schedule> Schedules { get; set; }
     }
     // public enum StatusType
     // {

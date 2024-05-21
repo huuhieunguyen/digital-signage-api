@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using CMS.Data;
 using CMS.Repositories;
 using CMS.Services;
+using Azure.Storage.Blobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,10 @@ builder.Services.AddScoped<IPlayerService, PlayerService>();
 
 builder.Services.AddScoped<ILabelRepository, LabelRepository>();
 builder.Services.AddScoped<ILabelService, LabelService>();
+
+builder.Services.AddSingleton(new BlobServiceClient(builder.Configuration.GetValue<string>("AzureBlobStorage:ConnectionString")));
+
+builder.Services.AddHostedService<ScheduleBackgroundService>();
 
 builder.Services.AddControllers();
 

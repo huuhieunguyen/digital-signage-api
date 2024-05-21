@@ -1,68 +1,99 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using CMS.Models;
 using CMS.Repositories;
+using Microsoft.AspNetCore.Http;
 
 namespace CMS.Services
 {
     public class ContentItemService : IContentItemService
     {
         private readonly IContentItemRepository _contentItemRepository;
+        private readonly BlobServiceClient _blobServiceClient;
 
-        public ContentItemService(IContentItemRepository contentItemRepository)
+        public ContentItemService(IContentItemRepository contentItemRepository, BlobServiceClient blobServiceClient)
         {
             _contentItemRepository = contentItemRepository;
+            _blobServiceClient = blobServiceClient;
         }
 
-        public IEnumerable<ContentItem> GetAllContentItems()
+        public async Task<IEnumerable<ContentItem>> GetAllContentItemsAsync()
         {
-            return _contentItemRepository.GetAllContentItems();
+            return await _contentItemRepository.GetAllContentItemsAsync();
         }
 
-        public ContentItem GetContentItem(int id)
+        public async Task<ContentItem> GetContentItemByIdAsync(int contentItemId)
         {
-            return _contentItemRepository.GetContentItem(id);
+            return await _contentItemRepository.GetContentItemByIdAsync(contentItemId);
         }
 
-        public ContentItem CreateContentItem(ContentItem contentItem)
+        public async Task<ContentItem> AddContentItemAsync(ContentItem contentItem, IFormFile file)
         {
-            var content = new ContentItem
+            // Upload the file to Azure Blob Storage
+            var filePath = await UploadFileToBlobStorage(file);
+
+            // Generate a thumbnail and upload to Azure Blob Storage
+            var thumbnailUrl = await GenerateAndUploadThumbnail(file);
+
+            contentItem.FilePath = filePath;
+            contentItem.ThumbnailUrl = thumbnailUrl;
+
+            if (contentItem.ResourceType == ResourceType.Image)
             {
-                Title = contentItem.Title,
-                Description = contentItem.Description,
-                FilePath = contentItem.FilePath,
-                ResourceType = contentItem.ResourceType,
-                Duration = contentItem.Duration,
-                Dimensions = contentItem.Dimensions,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+                contentItem.Duration = contentItem.Duration ?? 10;
+            }
 
-            return _contentItemRepository.CreateContentItem(content);
+            return await _contentItemRepository.AddContentItemAsync(contentItem);
         }
 
-        public ContentItem UpdateContentItem(int id, ContentItem contentItem)
+        public async Task<ContentItem> UpdateContentItemAsync(ContentItem contentItem)
         {
-            var existingContent = _contentItemRepository.GetContentItem(id);
-            if (existingContent == null)
-                return null;
-
-            existingContent.Title = contentItem.Title;
-            existingContent.Description = contentItem.Description;
-            existingContent.FilePath = contentItem.FilePath;
-            existingContent.ResourceType = contentItem.ResourceType;
-            existingContent.Duration = contentItem.Duration;
-            existingContent.Dimensions = contentItem.Dimensions;
-            existingContent.UpdatedAt = DateTime.UtcNow;
-
-            return _contentItemRepository.UpdateContentItem(existingContent);
+            return await _contentItemRepository.UpdateContentItemAsync(contentItem);
         }
 
-        public ContentItem DeleteContentItem(int id)
+        public async Task DeleteContentItemAsync(int contentItemId)
         {
-            var existingContent = _contentItemRepository.GetContentItem(id);
-            if (existingContent == null)
-                return null;
+            await _contentItemRepository.DeleteContentItemAsync(contentItemId);
+        }
 
-            return _contentItemRepository.DeleteContentItem(existingContent);
+        private async Task<string> UploadFileToBlobStorage(IFormFile file)
+        {
+            var containerClient = _blobServiceClient.GetBlobContainerClient("content-items");
+            var blobClient = containerClient.GetBlobClient(Guid.NewGuid().ToString() + Path.GetExtension(file.FileName));
+
+            using (var stream = file.OpenReadStream())
+            {
+                await blobClient.UploadAsync(stream, true);
+            }
+
+            return blobClient.Uri.ToString();
+        }
+
+        private async Task<string> GenerateAndUploadThumbnail(IFormFile file)
+        {
+            // Logic to generate a thumbnail from the file
+            // This depends on the type of the file (image/video) and the specific implementation
+
+            // Placeholder: Generate a thumbnail and return its URL
+            var thumbnailKey = "path/to/thumbnail";
+
+            // Upload the generated thumbnail to Azure Blob Storage
+            var containerClient = _blobServiceClient.GetBlobContainerClient("thumbnails");
+            var blobClient = containerClient.GetBlobClient(Guid.NewGuid().ToString() + ".jpg");
+
+            // Placeholder: Generate a thumbnail stream and upload
+            using (var thumbnailStream = new MemoryStream())
+            {
+                // Generate thumbnail logic here
+
+                await blobClient.UploadAsync(thumbnailStream, true);
+            }
+
+            return blobClient.Uri.ToString();
         }
     }
+
 }

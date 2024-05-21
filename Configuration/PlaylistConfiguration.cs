@@ -27,9 +27,9 @@ namespace CMS.Configuration
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .ValueGeneratedOnAddOrUpdate();
 
-            builder.HasMany(pl => pl.PlayerPlaylists)
-                .WithOne(pp => pp.Playlist)
-                .HasForeignKey(pp => pp.PlaylistId);
+            // builder.HasMany(pl => pl.PlayerPlaylists)
+            // .WithOne(pp => pp.Playlist)
+            // .HasForeignKey(pp => pp.PlaylistId);
 
             builder.HasMany(pl => pl.PlaylistContentItems)
                 .WithOne(pci => pci.Playlist)

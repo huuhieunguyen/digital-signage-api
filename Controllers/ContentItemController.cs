@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using CMS.Data;
 using CMS.Models;
 using CMS.Services;
 
@@ -17,56 +16,58 @@ namespace CMS.Controllers
         }
 
         [HttpGet]
-        public ActionResult GetContentItems()
+        public async Task<ActionResult<IEnumerable<ContentItem>>> GetContentItems()
         {
-            var contents = _contentItemService.GetAllContentItems();
-            return Ok(contents);
+            var contentItems = await _contentItemService.GetAllContentItemsAsync();
+            return Ok(contentItems);
         }
 
-        [HttpGet("{id}", Name = "GetContentItemById")]
-        public ActionResult GetContentItem(int id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ContentItem>> GetContentItem(int id)
         {
-            var content = _contentItemService.GetContentItem(id);
-            if (content == null)
+            var contentItem = await _contentItemService.GetContentItemByIdAsync(id);
+            if (contentItem == null)
+            {
                 return NotFound();
-
-            return Ok(content);
+            }
+            return Ok(contentItem);
         }
 
         [HttpPost]
-        public ActionResult CreateContentItem(ContentItem contentItem)
+        public async Task<ActionResult<ContentItem>> PostContentItem([FromForm] ContentItem contentItem, IFormFile file)
         {
-            if (!ModelState.IsValid)
+            if (file == null || (file.ContentType != "image/jpeg" && file.ContentType != "video/mp4"))
             {
-                return BadRequest(ModelState);
+                return BadRequest("Only JPEG images and MP4 videos are allowed.");
             }
-            var content = _contentItemService.CreateContentItem(contentItem);
-            return CreatedAtRoute("GetContentItemById", new { id = contentItem.Id }, content);
+
+            var createdContentItem = await _contentItemService.AddContentItemAsync(contentItem, file);
+            return CreatedAtAction(nameof(GetContentItem), new { id = createdContentItem.Id }, createdContentItem);
         }
 
-        [HttpPut]
-        [Route("{id}")]
-        public ActionResult UpdateContentItem(int id, ContentItem contentItem)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutContentItem(int id, ContentItem contentItem)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (id != contentItem.Id)
+            {
+                return BadRequest();
+            }
 
-            var content = _contentItemService.UpdateContentItem(id, contentItem);
-            if (content == null)
-                return NotFound();
-
-            return Ok(content);
+            await _contentItemService.UpdateContentItemAsync(contentItem);
+            return NoContent();
         }
 
-        [HttpDelete]
-        [Route("{id}")]
-        public ActionResult DeleteContentItem(int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteContentItem(int id)
         {
-            var deletedContent = _contentItemService.DeleteContentItem(id);
-            if (deletedContent == null)
+            var contentItem = await _contentItemService.GetContentItemByIdAsync(id);
+            if (contentItem == null)
+            {
                 return NotFound();
+            }
 
-            return Ok(deletedContent);
+            await _contentItemService.DeleteContentItemAsync(id);
+            return NoContent();
         }
     }
 }

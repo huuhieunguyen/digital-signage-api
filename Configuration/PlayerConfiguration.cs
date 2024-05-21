@@ -51,9 +51,9 @@ namespace CMS.Configuration
             // a player can have one or many playlists
             // and a playlist can be associated with one or many players
             // so we need a join table, which is PlayerPlaylist.
-            builder.HasMany(p => p.PlayerPlaylists)
-                .WithOne(pp => pp.Player)
-                .HasForeignKey(pp => pp.PlayerId);
+            // builder.HasMany(p => p.PlayerPlaylists)
+            //     .WithOne(pp => pp.Player)
+            //     .HasForeignKey(pp => pp.PlayerId);
 
             // a player can have one or many labels
             // and a label can be associated with one or many players
