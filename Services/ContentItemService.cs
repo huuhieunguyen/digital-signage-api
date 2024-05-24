@@ -3,6 +3,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using CMS.Repositories;
 using CMS.Models;
+using CMS.Factories;
 
 namespace CMS.Services
 {
@@ -10,11 +11,18 @@ namespace CMS.Services
     {
         private readonly IContentItemRepository _contentItemRepository;
         private readonly BlobServiceClient _blobServiceClient;
+        private readonly IStorageServiceFactory _storageServiceFactory;
 
-        public ContentItemService(IContentItemRepository contentItemRepository, BlobServiceClient blobServiceClient)
+        // public ContentItemService(IContentItemRepository contentItemRepository, BlobServiceClient blobServiceClient)
+        // {
+        //     _contentItemRepository = contentItemRepository;
+        //     _blobServiceClient = blobServiceClient;
+        // }
+
+        public ContentItemService(IContentItemRepository contentItemRepository, IStorageServiceFactory storageServiceFactory)
         {
             _contentItemRepository = contentItemRepository;
-            _blobServiceClient = blobServiceClient;
+            _storageServiceFactory = storageServiceFactory;
         }
 
         public async Task<IEnumerable<ContentItem>> GetAllContentItemsAsync()
@@ -27,31 +35,70 @@ namespace CMS.Services
             return await _contentItemRepository.GetContentItemByIdAsync(contentItemId);
         }
 
-        public async Task<ContentItem> AddContentItemAsync(IFormFile file)
+        // public async Task<ContentItem> AddContentItemAsync(IFormFile file, string storageOption)
+        // {
+        //     if (file == null || (file.ContentType != "image/jpeg" && file.ContentType != "video/mp4"))
+        //     {
+        //         throw new ArgumentException("Only JPEG images and MP4 videos are allowed.");
+        //     }
+
+        //     var storageService = _storageServiceFactory.CreateStorageService(storageOption);
+
+        //     var fileUrl = await storageService.UploadFileAsync(file);
+
+        //     // Generate a thumbnail and upload to Azure Blob Storage, then get the URL
+        //     // var thumbnailUrl = await storageService.UploadThumbnailAsync(file);
+
+        //     // Extract metadata from the file
+        //     var contentItem = new ContentItem
+        //     {
+        //         Title = Path.GetFileNameWithoutExtension(file.FileName),
+        //         FilePath = fileUrl,
+        //         // ThumbnailUrl = thumbnailUrl,
+        //         ResourceType = GetResourceType(file),
+        //         Duration = file.ContentType.StartsWith("image") ? 10 : (int?)null,
+        //         Dimensions = await GetDimensionsAsync(file)
+        //     };
+
+        //     return await _contentItemRepository.AddContentItemAsync(contentItem);
+        // }
+
+        public async Task<IEnumerable<ContentItem>> AddContentItemsAsync(List<IFormFile> files, string storageOption)
         {
-            if (file == null || (file.ContentType != "image/jpeg" && file.ContentType != "video/mp4"))
+            var contentItems = new List<ContentItem>();
+
+            var allowedImageExtensions = new HashSet<string> { ".jpeg", ".jpg", ".png", ".gif", ".bmp", ".tiff" };
+            var allowedVideoExtensions = new HashSet<string> { ".mp4", ".avi", ".mov", ".wmv", ".flv", ".mkv", ".webm" };
+
+            foreach (var file in files)
             {
-                throw new ArgumentException("Only JPEG images and MP4 videos are allowed.");
+                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                if (!allowedImageExtensions.Contains(extension) && !allowedVideoExtensions.Contains(extension))
+                {
+                    throw new ArgumentException("Unsupported file type.");
+                }
+
+                var storageService = _storageServiceFactory.CreateStorageService(storageOption);
+                var fileUrl = await storageService.UploadFileAsync(file);
+
+                // Generate a thumbnail and upload to Azure Blob Storage, then get the URL
+                // var thumbnailUrl = await storageService.UploadThumbnailAsync(file);
+
+                var contentItem = new ContentItem
+                {
+                    Title = Path.GetFileNameWithoutExtension(file.FileName),
+                    FilePath = fileUrl,
+                    // ThumbnailUrl = thumbnailUrl,
+                    ResourceType = allowedImageExtensions.Contains(extension) ? ResourceType.Image : ResourceType.Video,
+                    Duration = allowedImageExtensions.Contains(extension) ? 10 : (int?)null,
+                    Dimensions = await GetDimensionsAsync(file)
+                };
+
+                contentItems.Add(contentItem);
+                await _contentItemRepository.AddContentItemAsync(contentItem);
             }
 
-            // Upload the file to Azure Blob Storage and get the URL
-            var fileUrl = await UploadFileToBlobStorage(file);
-
-            // Generate a thumbnail and upload to Azure Blob Storage, then get the URL
-            // var thumbnailUrl = await GenerateAndUploadThumbnail(file);
-
-            // Extract metadata from the file
-            var contentItem = new ContentItem
-            {
-                Title = Path.GetFileNameWithoutExtension(file.FileName),
-                FilePath = fileUrl,
-                // ThumbnailUrl = thumbnailUrl,
-                ResourceType = GetResourceType(file),
-                Duration = file.ContentType.StartsWith("image") ? 10 : (int?)null,
-                Dimensions = await GetDimensionsAsync(file)
-            };
-
-            return await _contentItemRepository.AddContentItemAsync(contentItem);
+            return contentItems;
         }
 
         public async Task<ContentItem> UpdateContentItemAsync(ContentItem contentItem)
@@ -64,18 +111,18 @@ namespace CMS.Services
             await _contentItemRepository.DeleteContentItemAsync(contentItemId);
         }
 
-        private async Task<string> UploadFileToBlobStorage(IFormFile file)
-        {
-            var containerClient = _blobServiceClient.GetBlobContainerClient("media-container");
-            var blobClient = containerClient.GetBlobClient(Guid.NewGuid().ToString() + Path.GetExtension(file.FileName));
+        // private async Task<string> UploadFileToBlobStorage(IFormFile file)
+        // {
+        //     var containerClient = _blobServiceClient.GetBlobContainerClient("media-container");
+        //     var blobClient = containerClient.GetBlobClient(Guid.NewGuid().ToString() + Path.GetExtension(file.FileName));
 
-            using (var stream = file.OpenReadStream())
-            {
-                await blobClient.UploadAsync(stream, true);
-            }
+        //     using (var stream = file.OpenReadStream())
+        //     {
+        //         await blobClient.UploadAsync(stream, true);
+        //     }
 
-            return blobClient.Uri.ToString();
-        }
+        //     return blobClient.Uri.ToString();
+        // }
 
         private ResourceType GetResourceType(IFormFile file)
         {

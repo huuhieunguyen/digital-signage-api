@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using CMS.Models;
 using CMS.Services;
+using CMS.Models.RequestModels;
 
 namespace CMS.Controllers
 {
@@ -34,27 +35,38 @@ namespace CMS.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ContentItem>> PostContentItem(IFormFile file)
+        public async Task<IActionResult> PostContentItems([FromForm] List<IFormFile> files, [FromQuery] string storageOption = "cloudinary")
         {
-            if (file == null || (file.ContentType != "image/jpeg" && file.ContentType != "video/mp4"))
+            if (files == null || files.Count == 0)
             {
-                return BadRequest("Only JPEG images and MP4 videos are allowed.");
+                return BadRequest("No files uploaded.");
             }
 
-            var createdContentItem = await _contentItemService.AddContentItemAsync(file);
-            return CreatedAtAction(nameof(GetContentItem), new { id = createdContentItem.Id }, createdContentItem);
+            try
+            {
+                var contentItems = await _contentItemService.AddContentItemsAsync(files, storageOption);
+                return Ok(contentItems);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutContentItem(int id, ContentItem contentItem)
+        public async Task<IActionResult> PutContentItem(int id, [FromBody] ContentItemUpdateRequestModel updateModel)
         {
-            if (id != contentItem.Id)
+            var contentItem = await _contentItemService.GetContentItemByIdAsync(id);
+            if (contentItem == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
+            contentItem.Title = updateModel.Title;
+            contentItem.Description = updateModel.Description;
+
             await _contentItemService.UpdateContentItemAsync(contentItem);
-            return NoContent();
+            return Ok(contentItem);
         }
 
         [HttpDelete("{id}")]
@@ -67,7 +79,7 @@ namespace CMS.Controllers
             }
 
             await _contentItemService.DeleteContentItemAsync(id);
-            return NoContent();
+            return Ok(new { message = "Content item deleted successfully." });
         }
     }
 }

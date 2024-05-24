@@ -4,12 +4,25 @@ using CMS.Data;
 using CMS.Repositories;
 using CMS.Services;
 using Azure.Storage.Blobs;
+using CMS.Factories;
+using CloudinaryDotNet;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<CmsDbContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddSingleton(new BlobServiceClient(builder.Configuration.GetValue<string>("AzureBlobStorage:ConnectionString")));
+
+var cloudinary = new Cloudinary(new Account(
+    builder.Configuration["Cloudinary:CloudName"],
+    builder.Configuration["Cloudinary:ApiKey"],
+    builder.Configuration["Cloudinary:ApiSecret"]
+));
+builder.Services.AddSingleton(cloudinary);
+
+builder.Services.AddSingleton<AzureBlobService>();
 
 builder.Services.AddScoped<IContentItemRepository, ContentItemRepository>();
 builder.Services.AddScoped<IContentItemService, ContentItemService>();
@@ -23,9 +36,9 @@ builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<ILabelRepository, LabelRepository>();
 builder.Services.AddScoped<ILabelService, LabelService>();
 
-builder.Services.AddSingleton(new BlobServiceClient(builder.Configuration.GetValue<string>("AzureBlobStorage:ConnectionString")));
-
-builder.Services.AddSingleton<AzureBlobService>();
+builder.Services.AddScoped<AzureBlobStorageService>();
+builder.Services.AddScoped<CloudinaryStorageService>();
+builder.Services.AddScoped<IStorageServiceFactory, StorageServiceFactory>();
 
 builder.Services.AddHostedService<ScheduleBackgroundService>();
 
