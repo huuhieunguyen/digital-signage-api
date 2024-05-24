@@ -25,6 +25,8 @@ builder.Services.AddScoped<ILabelService, LabelService>();
 
 builder.Services.AddSingleton(new BlobServiceClient(builder.Configuration.GetValue<string>("AzureBlobStorage:ConnectionString")));
 
+builder.Services.AddSingleton<AzureBlobService>();
+
 builder.Services.AddHostedService<ScheduleBackgroundService>();
 
 builder.Services.AddControllers();

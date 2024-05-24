@@ -34,14 +34,14 @@ namespace CMS.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ContentItem>> PostContentItem([FromForm] ContentItem contentItem, IFormFile file)
+        public async Task<ActionResult<ContentItem>> PostContentItem(IFormFile file)
         {
             if (file == null || (file.ContentType != "image/jpeg" && file.ContentType != "video/mp4"))
             {
                 return BadRequest("Only JPEG images and MP4 videos are allowed.");
             }
 
-            var createdContentItem = await _contentItemService.AddContentItemAsync(contentItem, file);
+            var createdContentItem = await _contentItemService.AddContentItemAsync(file);
             return CreatedAtAction(nameof(GetContentItem), new { id = createdContentItem.Id }, createdContentItem);
         }
 

@@ -22,9 +22,8 @@ namespace CMS.Configuration
             builder.Property(ci => ci.FilePath)
                 .HasMaxLength(255);
 
-            // builder.Property(ci => ci.ResourceType)
-            //     .IsRequired()
-            //     .HasMaxLength(255);
+            builder.Property(ci => ci.ResourceType)
+                .HasConversion<string>();
 
             builder.Property(ci => ci.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")

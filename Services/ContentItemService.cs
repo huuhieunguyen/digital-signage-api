@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Azure.Storage.Blobs;
-using CMS.Models;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 using CMS.Repositories;
-using Microsoft.AspNetCore.Http;
+using CMS.Models;
 
 namespace CMS.Services
 {
@@ -30,21 +27,29 @@ namespace CMS.Services
             return await _contentItemRepository.GetContentItemByIdAsync(contentItemId);
         }
 
-        public async Task<ContentItem> AddContentItemAsync(ContentItem contentItem, IFormFile file)
+        public async Task<ContentItem> AddContentItemAsync(IFormFile file)
         {
-            // Upload the file to Azure Blob Storage
-            var filePath = await UploadFileToBlobStorage(file);
-
-            // Generate a thumbnail and upload to Azure Blob Storage
-            var thumbnailUrl = await GenerateAndUploadThumbnail(file);
-
-            contentItem.FilePath = filePath;
-            contentItem.ThumbnailUrl = thumbnailUrl;
-
-            if (contentItem.ResourceType == ResourceType.Image)
+            if (file == null || (file.ContentType != "image/jpeg" && file.ContentType != "video/mp4"))
             {
-                contentItem.Duration = contentItem.Duration ?? 10;
+                throw new ArgumentException("Only JPEG images and MP4 videos are allowed.");
             }
+
+            // Upload the file to Azure Blob Storage and get the URL
+            var fileUrl = await UploadFileToBlobStorage(file);
+
+            // Generate a thumbnail and upload to Azure Blob Storage, then get the URL
+            // var thumbnailUrl = await GenerateAndUploadThumbnail(file);
+
+            // Extract metadata from the file
+            var contentItem = new ContentItem
+            {
+                Title = Path.GetFileNameWithoutExtension(file.FileName),
+                FilePath = fileUrl,
+                // ThumbnailUrl = thumbnailUrl,
+                ResourceType = GetResourceType(file),
+                Duration = file.ContentType.StartsWith("image") ? 10 : (int?)null,
+                Dimensions = await GetDimensionsAsync(file)
+            };
 
             return await _contentItemRepository.AddContentItemAsync(contentItem);
         }
@@ -61,7 +66,7 @@ namespace CMS.Services
 
         private async Task<string> UploadFileToBlobStorage(IFormFile file)
         {
-            var containerClient = _blobServiceClient.GetBlobContainerClient("content-items");
+            var containerClient = _blobServiceClient.GetBlobContainerClient("media-container");
             var blobClient = containerClient.GetBlobClient(Guid.NewGuid().ToString() + Path.GetExtension(file.FileName));
 
             using (var stream = file.OpenReadStream())
@@ -72,28 +77,72 @@ namespace CMS.Services
             return blobClient.Uri.ToString();
         }
 
-        private async Task<string> GenerateAndUploadThumbnail(IFormFile file)
+        private ResourceType GetResourceType(IFormFile file)
         {
-            // Logic to generate a thumbnail from the file
-            // This depends on the type of the file (image/video) and the specific implementation
+            return file.ContentType.StartsWith("image") ? ResourceType.Image : ResourceType.Video;
+        }
 
-            // Placeholder: Generate a thumbnail and return its URL
-            var thumbnailKey = "path/to/thumbnail";
-
-            // Upload the generated thumbnail to Azure Blob Storage
-            var containerClient = _blobServiceClient.GetBlobContainerClient("thumbnails");
-            var blobClient = containerClient.GetBlobClient(Guid.NewGuid().ToString() + ".jpg");
-
-            // Placeholder: Generate a thumbnail stream and upload
-            using (var thumbnailStream = new MemoryStream())
+        private async Task<string> GetDimensionsAsync(IFormFile file)
+        {
+            if (file.ContentType.StartsWith("image"))
             {
-                // Generate thumbnail logic here
-
-                await blobClient.UploadAsync(thumbnailStream, true);
+                using (var image = SixLabors.ImageSharp.Image.Load(file.OpenReadStream()))
+                {
+                    return $"{image.Width}x{image.Height}";
+                }
+            }
+            else if (file.ContentType.StartsWith("video"))
+            {
+                // Placeholder for getting video dimensions
+                return await GetVideoDimensions(file);
             }
 
-            return blobClient.Uri.ToString();
+            return null;
         }
-    }
+        private async Task<string> GetVideoDimensions(IFormFile file)
+        {
+            // Implement logic to extract video dimensions using a library like FFmpeg
+            return "1920x1080"; // Example resolution
+        }
 
+        // private async Task<string> GenerateAndUploadThumbnail(IFormFile file)
+        //         {
+        //             using (var thumbnailStream = new MemoryStream())
+        //             {
+        //                 if (file.ContentType.StartsWith("image"))
+        //                 {
+        //                     using (var image = SixLabors.ImageSharp.Image.Load(file.OpenReadStream()))
+        //                     {
+        //                         image.Mutate(x => x.Resize(new ResizeOptions
+        //                         {
+        //                             Mode = ResizeMode.Max,
+        //                             Size = new SixLabors.ImageSharp.Size(150, 150)
+        //                         }));
+
+        //                         await image.SaveAsJpegAsync(thumbnailStream);
+        //                     }
+        //                 }
+        //                 else if (file.ContentType.StartsWith("video"))
+        //                 {
+        //                     // Placeholder for video thumbnail generation logic
+        //                     await GenerateVideoThumbnail(file, thumbnailStream);
+        //                 }
+
+        //                 thumbnailStream.Seek(0, SeekOrigin.Begin);
+        //                 var containerClient = _blobServiceClient.GetBlobContainerClient("thumbnails");
+        //                 var blobClient = containerClient.GetBlobClient(Guid.NewGuid().ToString() + ".jpg");
+
+        //                 await blobClient.UploadAsync(thumbnailStream, true);
+        //                 return blobClient.Uri.ToString();
+        //             }
+        //         }
+
+        // private async Task GenerateVideoThumbnail(IFormFile file, Stream thumbnailStream)
+        // {
+        //     // Implement logic to generate a thumbnail for video files using a library like FFmpeg
+        //     var placeholderImage = new SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>(150, 150);
+        //     placeholderImage.Mutate(ctx => ctx.Fill(SixLabors.ImageSharp.Color.Gray));
+        //     await placeholderImage.SaveAsJpegAsync(thumbnailStream);
+        // }
+    }
 }
