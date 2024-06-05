@@ -24,6 +24,12 @@ builder.Services.AddSingleton(cloudinary);
 
 builder.Services.AddSingleton<AzureBlobService>();
 
+// builder.Services.AddAutoMapper(typeof(Program).Assembly);
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+
+builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
+builder.Services.AddScoped<IScheduleService, ScheduleService>();
+
 builder.Services.AddScoped<IContentItemRepository, ContentItemRepository>();
 builder.Services.AddScoped<IContentItemService, ContentItemService>();
 

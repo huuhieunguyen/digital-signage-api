@@ -5,7 +5,7 @@ using Npgsql;
 namespace CMS.Controllers
 {
     [ApiController]
-    [Route("api/v1")]
+    [Route("api/test-db-connection")]
     public class TestDbController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -15,7 +15,7 @@ namespace CMS.Controllers
             _configuration = configuration;
         }
 
-        [HttpGet("test-db-connection")]
+        [HttpGet]
         public IActionResult TestDbConnection()
         {
             var connectionString = _configuration.GetConnectionString("DefaultConnection");

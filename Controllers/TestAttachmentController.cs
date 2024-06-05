@@ -5,10 +5,10 @@ namespace AzureBlob.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AttachmentController : ControllerBase
+    public class TestAttachmentController : ControllerBase
     {
         AzureBlobService _service;
-        public AttachmentController(AzureBlobService service)
+        public TestAttachmentController(AzureBlobService service)
         {
             _service = service;
         }
