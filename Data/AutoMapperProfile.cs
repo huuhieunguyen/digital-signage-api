@@ -1,5 +1,8 @@
 using AutoMapper;
+using CMS.DTOs.ContentItemDtos;
+using CMS.DTOs.LabelDtos;
 using CMS.DTOs.PlayerDtos;
+using CMS.DTOs.PlaylistDtos;
 using CMS.DTOs.ScheduleDtos;
 using CMS.Models;
 
@@ -22,8 +25,23 @@ namespace CMS.Data
             //     })); // Map Player to PlayerResponseModel
 
             CreateMap<Schedule, ScheduleResponseDto>().ReverseMap();
-            CreateMap<ScheduleCreateRequestDto, Schedule>();
+            CreateMap<ScheduleCreateRequestDto, Schedule>().ReverseMap();
 
+            CreateMap<ContentItem, ContentItemResponseDto>().ReverseMap();
+            CreateMap<ContentItemCreateRequestDto, ContentItem>()
+                .ForMember(dest => dest.PlaylistContentItems, opt => opt.Ignore());
+
+
+            CreateMap<Playlist, PlaylistResponseDto>().ReverseMap();
+            CreateMap<PlaylistCreateRequestDto, Playlist>()
+                .ForMember(dest => dest.PlaylistContentItems, opt => opt.Ignore())
+                .ForMember(dest => dest.PlaylistLabels, opt => opt.Ignore())
+                .ForMember(dest => dest.Schedules, opt => opt.Ignore());
+
+            CreateMap<Label, LabelResponseDto>().ReverseMap();
+            CreateMap<LabelCreateRequestDto, Label>()
+                .ForMember(dest => dest.PlaylistLabels, opt => opt.Ignore())
+                .ForMember(dest => dest.PlayerLabels, opt => opt.Ignore());
         }
     }
 }

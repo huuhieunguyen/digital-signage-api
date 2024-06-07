@@ -4,7 +4,6 @@ using CMS.Data;
 using CMS.Repositories;
 using CMS.Services;
 using Azure.Storage.Blobs;
-using CMS.Factories;
 using CloudinaryDotNet;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,15 +35,17 @@ builder.Services.AddScoped<IContentItemService, ContentItemService>();
 builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 
-// builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
-// builder.Services.AddScoped<IPlaylistService, PlaylistService>();
+builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
+builder.Services.AddScoped<IPlaylistService, PlaylistService>();
 
 builder.Services.AddScoped<ILabelRepository, LabelRepository>();
 builder.Services.AddScoped<ILabelService, LabelService>();
 
-builder.Services.AddScoped<AzureBlobStorageService>();
-builder.Services.AddScoped<CloudinaryStorageService>();
-builder.Services.AddScoped<IStorageServiceFactory, StorageServiceFactory>();
+builder.Services.AddScoped<IStorageService, CloudinaryStorageService>();
+
+// builder.Services.AddScoped<CloudinaryStorageService>();
+// builder.Services.AddScoped<AzureBlobStorageService>();
+// builder.Services.AddScoped<IStorageServiceFactory, StorageServiceFactory>();
 
 builder.Services.AddHostedService<ScheduleBackgroundService>();
 

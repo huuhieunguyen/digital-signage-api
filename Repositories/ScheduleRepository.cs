@@ -1,6 +1,5 @@
 using CMS.Data;
 using CMS.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace CMS.Repositories
 {

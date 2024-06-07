@@ -6,8 +6,8 @@ namespace CMS.Services
     public abstract class BaseService<TEntity, TResponse, TCreateRequest> : IBaseService<TResponse, TCreateRequest>
         where TEntity : class
     {
-        private readonly IBaseRepository<TEntity> _repository;
-        private readonly IMapper _mapper;
+        protected readonly IBaseRepository<TEntity> _repository;
+        protected readonly IMapper _mapper;
 
         protected BaseService(IBaseRepository<TEntity> repository, IMapper mapper)
         {
@@ -27,14 +27,14 @@ namespace CMS.Services
             return _mapper.Map<TResponse>(entity);
         }
 
-        public async Task<TResponse> CreateAsync(TCreateRequest request)
+        public virtual async Task<TResponse> CreateAsync(TCreateRequest request)
         {
             var entity = _mapper.Map<TEntity>(request);
             var createdEntity = await _repository.CreateAsync(entity);
             return _mapper.Map<TResponse>(createdEntity);
         }
 
-        public async Task<TResponse> UpdateAsync(int id, TCreateRequest request)
+        public virtual async Task<TResponse> UpdateAsync(int id, TCreateRequest request)
         {
             var entity = await _repository.GetByIdAsync(id);
             if (entity != null)

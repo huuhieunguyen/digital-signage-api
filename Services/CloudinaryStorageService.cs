@@ -1,12 +1,16 @@
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using CMS.Services;
-using Microsoft.AspNetCore.Http;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
 
 namespace CMS.Services
 {
+    public interface IStorageService
+    {
+        // Task<string> UploadFileAsync(IFormFile file);
+        Task<(string Url, int? Duration, string Dimensions)> UploadFileAsync(IFormFile file);
+
+        // Task<string> UploadThumbnailAsync(IFormFile file);
+    }
+
     public class CloudinaryStorageService : IStorageService
     {
         private readonly Cloudinary _cloudinary;
@@ -16,51 +20,18 @@ namespace CMS.Services
             _cloudinary = cloudinary;
         }
 
-        public async Task<string> UploadFileAsync(IFormFile file)
-        {
-            if (_cloudinary == null)
-            {
-                throw new InvalidOperationException("Cloudinary instance is not configured properly.");
-            }
-
-            using (var stream = file.OpenReadStream())
-            {
-                var uploadParams = new RawUploadParams
-                {
-                    File = new FileDescription(file.FileName, stream)
-                };
-
-                var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-                return uploadResult.SecureUrl.ToString();
-            }
-        }
-        // public async Task<string> UploadThumbnailAsync(IFormFile file)
+        // public async Task<string> UploadFileAsync(IFormFile file)
         // {
-        //     using (var thumbnailStream = new MemoryStream())
+        //     if (_cloudinary == null)
         //     {
-        //         if (file.ContentType.StartsWith("image"))
-        //         {
-        //             using (var image = SixLabors.ImageSharp.Image.Load(file.OpenReadStream()))
-        //             {
-        //                 image.Mutate(x => x.Resize(new ResizeOptions
-        //                 {
-        //                     Mode = ResizeMode.Max,
-        //                     Size = new SixLabors.ImageSharp.Size(150, 150)
-        //                 }));
+        //         throw new InvalidOperationException("Cloudinary instance is not configured properly.");
+        //     }
 
-        //                 await image.SaveAsJpegAsync(thumbnailStream);
-        //             }
-        //         }
-        //         else if (file.ContentType.StartsWith("video"))
+        //     using (var stream = file.OpenReadStream())
+        //     {
+        //         var uploadParams = new RawUploadParams
         //         {
-        //             // Placeholder for video thumbnail generation logic
-        //             await GenerateVideoThumbnail(file, thumbnailStream);
-        //         }
-
-        //         thumbnailStream.Seek(0, SeekOrigin.Begin);
-        //         var uploadParams = new ImageUploadParams()
-        //         {
-        //             File = new FileDescription(Guid.NewGuid().ToString(), thumbnailStream)
+        //             File = new FileDescription(file.FileName, stream)
         //         };
 
         //         var uploadResult = await _cloudinary.UploadAsync(uploadParams);
@@ -68,11 +39,38 @@ namespace CMS.Services
         //     }
         // }
 
-        // private async Task GenerateVideoThumbnail(IFormFile file, Stream thumbnailStream)
-        // {
-        //     var placeholderImage = new Image<SixLabors.ImageSharp.PixelFormats.Rgba32>(150, 150);
-        //     placeholderImage.Mutate(ctx => ctx.Fill(SixLabors.ImageSharp.Color.Gray));
-        //     await placeholderImage.SaveAsJpegAsync(thumbnailStream);
-        // }
+        public async Task<(string Url, int? Duration, string Dimensions)> UploadFileAsync(IFormFile file)
+        {
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(file.FileName, file.OpenReadStream()),
+                Transformation = new Transformation().Quality("auto").FetchFormat("auto")
+            };
+
+            UploadResult uploadResult;
+
+            if (file.ContentType.Contains("image"))
+            {
+                uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                var dimensions = $"{uploadResult.MetadataFields["width"]}x{uploadResult.MetadataFields["height"]}";
+                return (uploadResult.Url.ToString(), 10, dimensions);
+            }
+            else if (file.ContentType.Contains("video"))
+            {
+                var videoUploadParams = new VideoUploadParams
+                {
+                    File = new FileDescription(file.FileName, file.OpenReadStream())
+                };
+                var videoUploadResult = await _cloudinary.UploadLargeAsync(videoUploadParams);
+                var duration = Convert.ToInt32(videoUploadResult.Duration);
+                var dimensions = $"{videoUploadResult.Width}x{videoUploadResult.Height}";
+                return (videoUploadResult.Url.ToString(), duration, dimensions);
+            }
+            else
+            {
+                throw new NotSupportedException("Unsupported media type");
+            }
+        }
     }
 }
+

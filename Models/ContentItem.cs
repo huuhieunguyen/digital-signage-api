@@ -10,7 +10,7 @@ namespace CMS.Models
         public string Title { get; set; }
         public string? Description { get; set; }
         public string? FilePath { get; set; }
-        public string? ThumbnailUrl { get; set; }
+        // public string? ThumbnailUrl { get; set; }
         public int? Duration { get; set; } = 10;
         public string? Dimensions { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
