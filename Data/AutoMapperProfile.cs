@@ -30,7 +30,10 @@ namespace CMS.Data
             CreateMap<ContentItem, ContentItemResponseDto>().ReverseMap();
             CreateMap<ContentItemCreateRequestDto, ContentItem>()
                 .ForMember(dest => dest.PlaylistContentItems, opt => opt.Ignore());
+            CreateMap<ContentItemUpdateRequestDto, ContentItem>()
+                .ForMember(dest => dest.PlaylistContentItems, opt => opt.Ignore());
 
+            // CreateMap<PlaylistContentItem, PlaylistContentItemDto>().ReverseMap();
 
             CreateMap<Playlist, PlaylistResponseDto>().ReverseMap();
             CreateMap<PlaylistCreateRequestDto, Playlist>()

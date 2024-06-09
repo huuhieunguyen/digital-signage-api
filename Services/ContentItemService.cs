@@ -8,6 +8,7 @@ namespace CMS.Services
     public interface IContentItemService : IBaseService<ContentItemResponseDto, ContentItemCreateRequestDto>
     {
         Task<IEnumerable<ContentItemResponseDto>> UploadContentItemsAsync(IEnumerable<IFormFile> files);
+        Task<ContentItemResponseDto> UpdateContentItemAsync(int id, ContentItemUpdateRequestDto request);
     }
 
     public class ContentItemService : BaseService<ContentItem, ContentItemResponseDto, ContentItemCreateRequestDto>, IContentItemService
@@ -67,5 +68,30 @@ namespace CMS.Services
             var createdContentItem = await _repository.CreateAsync(contentItem);
             return _mapper.Map<ContentItemResponseDto>(createdContentItem);
         }
+
+        public async Task<ContentItemResponseDto> UpdateContentItemAsync(int id, ContentItemUpdateRequestDto request)
+        {
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity != null)
+            {
+                _mapper.Map(request, entity);
+                await _repository.UpdateAsync(entity);
+                return _mapper.Map<ContentItemResponseDto>(entity);
+            }
+            return default;
+        }
+
+        // Download file
+        public async Task<(string, string)> DownloadFileAsync(int id)
+        {
+            var contentItem = await _repository.GetByIdAsync(id);
+            if (contentItem != null)
+            {
+                var fileStream = await _storageService.DownloadFileAsync(contentItem.FilePath);
+                return (contentItem.Title, fileStream);
+            }
+            return default;
+        }
+
     }
 }

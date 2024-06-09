@@ -7,7 +7,7 @@ namespace CMS.Controllers
     [ApiController]
     public abstract class BaseController<TResponse, TCreateRequest> : ControllerBase
     {
-        private readonly IBaseService<TResponse, TCreateRequest> _service;
+        protected readonly IBaseService<TResponse, TCreateRequest> _service;
 
         protected BaseController(IBaseService<TResponse, TCreateRequest> service)
         {
@@ -40,7 +40,7 @@ namespace CMS.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<TResponse>> Update(int id, TCreateRequest request)
+        public virtual async Task<ActionResult<TResponse>> Update(int id, [FromBody] TCreateRequest request)
         {
             var response = await _service.UpdateAsync(id, request);
             if (response == null)

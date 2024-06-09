@@ -92,20 +92,66 @@ namespace CMS.Controllers
 {
     [Route("api/v1/content-items")]
     [ApiController]
-    public class ContentItemController : BaseController<ContentItemResponseDto, ContentItemCreateRequestDto>
+    public class ContentItemController : ControllerBase
     {
         private readonly IContentItemService _contentItemService;
 
-        public ContentItemController(IContentItemService service) : base(service)
+        public ContentItemController(IContentItemService service)
         {
             _contentItemService = service;
         }
 
-        [HttpPost("upload")]
-        public async Task<ActionResult<IEnumerable<ContentItemResponseDto>>> UploadContentItems([FromForm] List<IFormFile> files)
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<ContentItemResponseDto>>> Create([FromForm] List<IFormFile> files)
         {
             var result = await _contentItemService.UploadContentItemsAsync(files);
             return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ContentItemResponseDto>>> GetAll()
+        {
+            var responses = await _contentItemService.GetAllAsync();
+            return Ok(responses);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ContentItemResponseDto>> GetById(int id)
+        {
+            var response = await _contentItemService.GetByIdAsync(id);
+            if (response == null)
+            {
+                return NotFound();
+            }
+            return Ok(response);
+        }
+
+        // [HttpPut("not-used/{id}")]
+        // public override Task<ActionResult<ContentItemResponseDto>> Update(int id, [FromBody] ContentItemCreateRequestDto request)
+        // {
+        //     return Task.FromResult<ActionResult<ContentItemResponseDto>>(NotFound());
+        // }
+
+        [HttpPut("{id}")]
+        public new async Task<ActionResult<ContentItemResponseDto>> Update(int id, [FromBody] ContentItemUpdateRequestDto request)
+        {
+            var response = await _contentItemService.UpdateContentItemAsync(id, request);
+            if (response == null)
+            {
+                return NotFound();
+            }
+            return Ok(response);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var success = await _contentItemService.DeleteAsync(id);
+            if (!success)
+            {
+                return NotFound();
+            }
+            return NoContent();
         }
     }
 }
