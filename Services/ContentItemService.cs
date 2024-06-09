@@ -31,12 +31,14 @@ namespace CMS.Services
 
             foreach (var file in files)
             {
-                var (url, duration, dimensions) = await _storageService.UploadFileAsync(file);
+                var (url, duration, width, height, dimensions) = await _storageService.UploadFileAsync(file);
                 var contentItem = new ContentItem
                 {
                     Title = file.FileName,
                     FilePath = url,
                     Duration = duration,
+                    Width = width,
+                    Height = height,
                     Dimensions = dimensions,
                     ResourceType = file.ContentType.Contains("image") ? ResourceType.Image : ResourceType.Video
                 };
@@ -49,13 +51,15 @@ namespace CMS.Services
 
         public override async Task<ContentItemResponseDto> CreateAsync(ContentItemCreateRequestDto request)
         {
-            var (url, duration, dimensions) = await _storageService.UploadFileAsync(request.File);
+            var (url, duration, width, height, dimensions) = await _storageService.UploadFileAsync(request.File);
             var contentItem = new ContentItem
             {
                 Title = request.Title,
                 Description = request.Description,
                 FilePath = url,
                 Duration = duration,
+                Width = width,
+                Height = height,
                 Dimensions = dimensions,
                 ResourceType = request.File.ContentType.Contains("image") ? ResourceType.Image : ResourceType.Video
             };

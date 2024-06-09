@@ -6,7 +6,7 @@ namespace CMS.Services
     public interface IStorageService
     {
         // Task<string> UploadFileAsync(IFormFile file);
-        Task<(string Url, int? Duration, string Dimensions)> UploadFileAsync(IFormFile file);
+        Task<(string Url, int? Duration, int? Width, int? Height, string Dimensions)> UploadFileAsync(IFormFile file);
 
         // Task<string> UploadThumbnailAsync(IFormFile file);
     }
@@ -20,27 +20,13 @@ namespace CMS.Services
             _cloudinary = cloudinary;
         }
 
-        // public async Task<string> UploadFileAsync(IFormFile file)
-        // {
-        //     if (_cloudinary == null)
-        //     {
-        //         throw new InvalidOperationException("Cloudinary instance is not configured properly.");
-        //     }
-
-        //     using (var stream = file.OpenReadStream())
-        //     {
-        //         var uploadParams = new RawUploadParams
-        //         {
-        //             File = new FileDescription(file.FileName, stream)
-        //         };
-
-        //         var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-        //         return uploadResult.SecureUrl.ToString();
-        //     }
-        // }
-
-        public async Task<(string Url, int? Duration, string Dimensions)> UploadFileAsync(IFormFile file)
+        public async Task<(string Url, int? Duration, int? Width, int? Height, string Dimensions)> UploadFileAsync(IFormFile file)
         {
+            if (_cloudinary == null)
+            {
+                throw new InvalidOperationException("Cloudinary instance is not configured properly.");
+            }
+
             var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription(file.FileName, file.OpenReadStream()),
@@ -52,8 +38,15 @@ namespace CMS.Services
             if (file.ContentType.Contains("image"))
             {
                 uploadResult = await _cloudinary.UploadAsync(uploadParams);
-                var dimensions = $"{uploadResult.MetadataFields["width"]}x{uploadResult.MetadataFields["height"]}";
-                return (uploadResult.Url.ToString(), 10, dimensions);
+                if (uploadResult == null || uploadResult.JsonObj == null)
+                {
+                    throw new ArgumentNullException(nameof(uploadResult), "uploadResult or its JsonObj property is null");
+                }
+                var width = (int?)uploadResult.JsonObj["width"];
+                var height = (int?)uploadResult.JsonObj["height"];
+                var dimensions = $"{width}x{height}";
+
+                return (uploadResult.Url.ToString(), 10, width, height, dimensions);
             }
             else if (file.ContentType.Contains("video"))
             {
@@ -63,8 +56,11 @@ namespace CMS.Services
                 };
                 var videoUploadResult = await _cloudinary.UploadLargeAsync(videoUploadParams);
                 var duration = Convert.ToInt32(videoUploadResult.Duration);
-                var dimensions = $"{videoUploadResult.Width}x{videoUploadResult.Height}";
-                return (videoUploadResult.Url.ToString(), duration, dimensions);
+                var width = (int?)videoUploadResult.JsonObj["width"];
+                var height = (int?)videoUploadResult.JsonObj["height"];
+                var dimensions = $"{width}x{height}";
+
+                return (videoUploadResult.Url.ToString(), duration, width, height, dimensions);
             }
             else
             {

@@ -12,6 +12,8 @@ namespace CMS.Models
         public string? FilePath { get; set; }
         // public string? ThumbnailUrl { get; set; }
         public int? Duration { get; set; } = 10;
+        public int? Width { get; set; }
+        public int? Height { get; set; }
         public string? Dimensions { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
