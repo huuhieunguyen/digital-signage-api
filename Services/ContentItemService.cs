@@ -5,12 +5,6 @@ using CMS.Repositories;
 
 namespace CMS.Services
 {
-    public interface IContentItemService : IBaseService<ContentItemResponseDto, ContentItemCreateRequestDto>
-    {
-        Task<IEnumerable<ContentItemResponseDto>> UploadContentItemsAsync(IEnumerable<IFormFile> files);
-        Task<ContentItemResponseDto> UpdateContentItemAsync(int id, ContentItemUpdateRequestDto request);
-    }
-
     public class ContentItemService : BaseService<ContentItem, ContentItemResponseDto, ContentItemCreateRequestDto>, IContentItemService
     {
         private readonly IStorageService _storageService;
@@ -81,16 +75,31 @@ namespace CMS.Services
             return default;
         }
 
-        // Download file
-        public async Task<(string, string)> DownloadFileAsync(int id)
+        public async Task<FileDownloadResult> DownloadContentItemAsync(int id)
         {
             var contentItem = await _repository.GetByIdAsync(id);
-            if (contentItem != null)
+            if (contentItem == null || string.IsNullOrEmpty(contentItem.FilePath))
             {
-                var fileStream = await _storageService.DownloadFileAsync(contentItem.FilePath);
-                return (contentItem.Title, fileStream);
+                return null;
             }
-            return default;
+
+            using var httpClient = new HttpClient();
+            var response = await httpClient.GetAsync(contentItem.FilePath);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var stream = await response.Content.ReadAsStreamAsync();
+            var contentType = response.Content.Headers.ContentType.ToString();
+            var fileName = Path.GetFileName(contentItem.FilePath);
+
+            return new FileDownloadResult
+            {
+                Stream = stream,
+                ContentType = contentType,
+                FileName = fileName
+            };
         }
 
     }

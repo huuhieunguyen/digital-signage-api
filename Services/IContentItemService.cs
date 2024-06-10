@@ -1,13 +1,13 @@
-// using CMS.Models;
+using CMS.DTOs.ContentItemDtos;
+using CMS.Models;
+using CMS.Services;
 
-// namespace CMS.Services
-// {
-//     public interface IContentItemService
-//     {
-//         Task<IEnumerable<ContentItem>> GetAllContentItemsAsync();
-//         Task<ContentItem> GetContentItemByIdAsync(int contentItemId);
-//         Task<IEnumerable<ContentItem>> AddContentItemsAsync(List<IFormFile> files, string storageOption);
-//         Task<ContentItem> UpdateContentItemAsync(ContentItem contentItem);
-//         Task DeleteContentItemAsync(int contentItemId);
-//     }
-// }
+namespace CMS.Services
+{
+    public interface IContentItemService : IBaseService<ContentItemResponseDto, ContentItemCreateRequestDto>
+    {
+        Task<IEnumerable<ContentItemResponseDto>> UploadContentItemsAsync(IEnumerable<IFormFile> files);
+        Task<ContentItemResponseDto> UpdateContentItemAsync(int id, ContentItemUpdateRequestDto request);
+        Task<FileDownloadResult> DownloadContentItemAsync(int id);
+    }
+}

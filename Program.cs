@@ -74,4 +74,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Enable serving static files
+app.UseStaticFiles();
+
 app.Run();

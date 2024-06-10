@@ -108,6 +108,17 @@ namespace CMS.Controllers
             return Ok(result);
         }
 
+        [HttpGet("download/{id}")]
+        public async Task<IActionResult> DownloadContentItem(int id)
+        {
+            var result = await _contentItemService.DownloadContentItemAsync(id);
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return File(result.Stream, result.ContentType, result.FileName);
+        }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ContentItemResponseDto>>> GetAll()
         {
@@ -125,12 +136,6 @@ namespace CMS.Controllers
             }
             return Ok(response);
         }
-
-        // [HttpPut("not-used/{id}")]
-        // public override Task<ActionResult<ContentItemResponseDto>> Update(int id, [FromBody] ContentItemCreateRequestDto request)
-        // {
-        //     return Task.FromResult<ActionResult<ContentItemResponseDto>>(NotFound());
-        // }
 
         [HttpPut("{id}")]
         public new async Task<ActionResult<ContentItemResponseDto>> Update(int id, [FromBody] ContentItemUpdateRequestDto request)
