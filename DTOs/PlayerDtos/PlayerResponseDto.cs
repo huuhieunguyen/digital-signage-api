@@ -1,3 +1,5 @@
+using CMS.DTOs.LabelDtos;
+
 namespace CMS.DTOs.PlayerDtos
 {
     public class PlayerResponseDto
@@ -12,7 +14,7 @@ namespace CMS.DTOs.PlayerDtos
         public string? Orientation { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public List<PlayerLabelDto> Labels { get; set; }
+        public List<LabelResponseDto> Labels { get; set; }
         // public ICollection<PlayerLabelDto> Labels { get; set; }
     }
 }

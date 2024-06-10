@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using CMS.Models;
 using CMS.Services;
-using CMS.Models.RequestModels;
 using CMS.DTOs.LabelDtos;
 
 namespace CMS.Controllers

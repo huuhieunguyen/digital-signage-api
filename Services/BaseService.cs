@@ -15,13 +15,13 @@ namespace CMS.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<TResponse>> GetAllAsync()
+        public virtual async Task<IEnumerable<TResponse>> GetAllAsync()
         {
             var entities = await _repository.GetAllAsync();
             return _mapper.Map<IEnumerable<TResponse>>(entities);
         }
 
-        public async Task<TResponse> GetByIdAsync(int id)
+        public virtual async Task<TResponse> GetByIdAsync(int id)
         {
             var entity = await _repository.GetByIdAsync(id);
             return _mapper.Map<TResponse>(entity);

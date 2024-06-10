@@ -15,14 +15,14 @@ namespace CMS.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TResponse>>> GetAll()
+        public virtual async Task<ActionResult<IEnumerable<TResponse>>> GetAll()
         {
             var responses = await _service.GetAllAsync();
             return Ok(responses);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<TResponse>> GetById(int id)
+        public virtual async Task<ActionResult<TResponse>> GetById(int id)
         {
             var response = await _service.GetByIdAsync(id);
             if (response == null)
@@ -33,7 +33,7 @@ namespace CMS.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<TResponse>> Create(TCreateRequest request)
+        public virtual async Task<ActionResult<TResponse>> Create(TCreateRequest request)
         {
             var response = await _service.CreateAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = response.GetHashCode() }, response); // Adjust as needed for identifier

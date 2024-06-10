@@ -29,11 +29,6 @@ namespace CMS.Configuration
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .ValueGeneratedOnAddOrUpdate();
 
-            // a schedule belongs to a player
-            builder.HasOne(s => s.Player)
-                .WithMany(p => p.Schedules)
-                .HasForeignKey(s => s.PlayerId);
-
             // a schedule belongs to a playlist
             builder.HasOne(s => s.Playlist)
                 .WithMany(p => p.Schedules)

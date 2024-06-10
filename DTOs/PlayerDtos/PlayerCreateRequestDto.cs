@@ -1,6 +1,6 @@
 namespace CMS.DTOs.PlayerDtos
 {
-    public class PlayerCreateDto
+    public class PlayerCreateRequestDto
     {
         public string Name { get; set; }
         public string? Location { get; set; }

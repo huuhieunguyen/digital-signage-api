@@ -12,17 +12,14 @@ namespace CMS.Data
     {
         public AutoMapperProfile()
         {
-            CreateMap<PlayerCreateDto, Player>();
             CreateMap<Player, PlayerResponseDto>()
-                .ForMember(dest => dest.Labels, opt => opt.MapFrom(src => src.PlayerLabels));
-            CreateMap<PlayerLabel, PlayerLabelDto>();
+                .ForMember(dest => dest.Labels, opt
+                => opt.MapFrom(src => src.PlayerLabels.Select(pl => pl.Label).ToList()));
+            CreateMap<PlayerCreateRequestDto, Player>()
+                .ForMember(dest => dest.PlayerLabels, opt
+                => opt.MapFrom(src => src.LabelIds.Select(labelId => new PlayerLabel { LabelId = labelId }).ToList()));
 
-            // CreateMap<Player, PlayerResponseDto>()
-            //     .ForMember(dest => dest.Labels, opt => opt.MapFrom(src => src.PlayerLabels.Select(pl => new PlayerLabelDto
-            //     {
-            //         Id = pl.Label.Id,
-            //         Name = pl.Label.Name
-            //     })); // Map Player to PlayerResponseModel
+            CreateMap<Label, LabelResponseDto>().ReverseMap();
 
             CreateMap<Schedule, ScheduleResponseDto>().ReverseMap();
             CreateMap<ScheduleCreateRequestDto, Schedule>().ReverseMap();
