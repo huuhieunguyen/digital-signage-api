@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AzureBlob.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/not-used/[controller]")]
     [ApiController]
     public class TestAttachmentController : ControllerBase
     {
