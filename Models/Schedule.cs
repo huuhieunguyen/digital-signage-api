@@ -10,11 +10,9 @@ namespace CMS.Models
         public DateTime UpdatedAt { get; set; }
 
         // Foreign key
-        public int PlayerId { get; set; }
         public int PlaylistId { get; set; }
 
         // Navigation property
         public Playlist Playlist { get; set; }
-        public Player Player { get; set; }
     }
 }

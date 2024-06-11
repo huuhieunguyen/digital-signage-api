@@ -48,7 +48,7 @@ builder.Services.AddScoped<IStorageService, CloudinaryStorageService>();
 // builder.Services.AddScoped<AzureBlobStorageService>();
 // builder.Services.AddScoped<IStorageServiceFactory, StorageServiceFactory>();
 
-builder.Services.AddHostedService<ScheduleBackgroundService>();
+// builder.Services.AddHostedService<ScheduleBackgroundService>();
 
 builder.Services.AddControllers();
 

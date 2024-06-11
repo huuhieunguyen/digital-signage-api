@@ -31,8 +31,8 @@ namespace CMS.Configuration
 
             // a schedule belongs to a playlist
             builder.HasOne(s => s.Playlist)
-                .WithMany(p => p.Schedules)
-                .HasForeignKey(s => s.PlaylistId);
+                .WithOne(p => p.Schedule)
+                .HasForeignKey<Schedule>(s => s.PlaylistId);
         }
     }
 

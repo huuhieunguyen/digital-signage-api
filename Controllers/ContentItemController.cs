@@ -138,7 +138,7 @@ namespace CMS.Controllers
         }
 
         [HttpPut("{id}")]
-        public new async Task<ActionResult<ContentItemResponseDto>> Update(int id, [FromBody] ContentItemUpdateRequestDto request)
+        public async Task<ActionResult<ContentItemResponseDto>> Update(int id, [FromBody] ContentItemUpdateRequestDto request)
         {
             var response = await _contentItemService.UpdateContentItemAsync(id, request);
             if (response == null)

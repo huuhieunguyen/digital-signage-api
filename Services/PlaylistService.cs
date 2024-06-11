@@ -15,69 +15,28 @@ namespace CMS.Services
 
     public class PlaylistService : BaseService<Playlist, PlaylistResponseDto, PlaylistCreateRequestDto>, IPlaylistService
     {
-        private readonly IContentItemRepository _contentItemRepository;
-        private readonly ILabelRepository _labelRepository;
-        private readonly IScheduleRepository _scheduleRepository;
+        private readonly IPlaylistRepository _playlistRepository;
 
-        public PlaylistService(
-            IPlaylistRepository repository,
-            IContentItemRepository contentItemRepository,
-            ILabelRepository labelRepository,
-            IScheduleRepository scheduleRepository,
-            IMapper mapper
-        ) : base(repository, mapper)
+        public PlaylistService(IPlaylistRepository repository, IMapper mapper)
+        : base(repository, mapper)
         {
-            _contentItemRepository = contentItemRepository;
-            _labelRepository = labelRepository;
-            _scheduleRepository = scheduleRepository;
+            _playlistRepository = repository;
         }
 
         public override async Task<PlaylistResponseDto> CreateAsync(PlaylistCreateRequestDto request)
         {
-            var playlist = _mapper.Map<Playlist>(request);
-
-            // Add content items
-            if (request.ContentItemIds != null)
+            var playlist = new Playlist
             {
-                playlist.PlaylistContentItems = new List<PlaylistContentItem>();
-                foreach (var contentItemId in request.ContentItemIds)
+                Title = request.Title,
+                PlaylistLabels = request.LabelIds.Select(labelId => new PlaylistLabel { LabelId = labelId }).ToList(),
+                PlaylistContentItems = request.ContentItemIds.Select(contentItemId => new PlaylistContentItem { ContentItemId = contentItemId }).ToList(),
+                Schedule = new Schedule
                 {
-                    var contentItem = await _contentItemRepository.GetByIdAsync(contentItemId);
-                    if (contentItem != null)
-                    {
-                        playlist.PlaylistContentItems.Add(new PlaylistContentItem
-                        {
-                            Playlist = playlist,
-                            ContentItem = contentItem
-                        });
-                    }
+                    StartTime = request.Schedule.StartTime,
+                    EndTime = request.Schedule.EndTime,
+                    DaysOfWeek = request.Schedule.DaysOfWeek
                 }
-            }
-
-            // Add labels
-            if (request.LabelIds != null)
-            {
-                playlist.PlaylistLabels = new List<PlaylistLabel>();
-                foreach (var labelId in request.LabelIds)
-                {
-                    var label = await _labelRepository.GetByIdAsync(labelId);
-                    if (label != null)
-                    {
-                        playlist.PlaylistLabels.Add(new PlaylistLabel
-                        {
-                            Playlist = playlist,
-                            Label = label
-                        });
-                    }
-                }
-            }
-
-            // Add schedule
-            if (request.Schedule != null)
-            {
-                var schedule = _mapper.Map<Schedule>(request.Schedule);
-                playlist.Schedules = new List<Schedule> { schedule };
-            }
+            };
 
             var createdPlaylist = await _repository.CreateAsync(playlist);
             return _mapper.Map<PlaylistResponseDto>(createdPlaylist);
@@ -85,59 +44,22 @@ namespace CMS.Services
 
         public override async Task<PlaylistResponseDto> UpdateAsync(int id, PlaylistCreateRequestDto request)
         {
-            var playlist = await _repository.GetByIdAsync(id);
-            if (playlist != null)
+            var playlist = await _playlistRepository.GetByIdAsync(id);
+            if (playlist == null)
             {
-                _mapper.Map(request, playlist);
-
-                // Update content items
-                playlist.PlaylistContentItems.Clear();
-                if (request.ContentItemIds != null)
-                {
-                    foreach (var contentItemId in request.ContentItemIds)
-                    {
-                        var contentItem = await _contentItemRepository.GetByIdAsync(contentItemId);
-                        if (contentItem != null)
-                        {
-                            playlist.PlaylistContentItems.Add(new PlaylistContentItem
-                            {
-                                Playlist = playlist,
-                                ContentItem = contentItem
-                            });
-                        }
-                    }
-                }
-
-                // Update labels
-                playlist.PlaylistLabels.Clear();
-                if (request.LabelIds != null)
-                {
-                    foreach (var labelId in request.LabelIds)
-                    {
-                        var label = await _labelRepository.GetByIdAsync(labelId);
-                        if (label != null)
-                        {
-                            playlist.PlaylistLabels.Add(new PlaylistLabel
-                            {
-                                Playlist = playlist,
-                                Label = label
-                            });
-                        }
-                    }
-                }
-
-                // Update schedule
-                playlist.Schedules.Clear();
-                if (request.Schedule != null)
-                {
-                    var schedule = _mapper.Map<Schedule>(request.Schedule);
-                    playlist.Schedules.Add(schedule);
-                }
-
-                await _repository.UpdateAsync(playlist);
-                return _mapper.Map<PlaylistResponseDto>(playlist);
+                return null;
             }
-            return null;
+
+            playlist.Title = request.Title;
+            playlist.PlaylistLabels = request.LabelIds.Select(labelId => new PlaylistLabel { PlaylistId = id, LabelId = labelId }).ToList();
+            playlist.PlaylistContentItems = request.ContentItemIds.Select(contentItemId => new PlaylistContentItem { PlaylistId = id, ContentItemId = contentItemId }).ToList();
+            playlist.Schedule.StartTime = request.Schedule.StartTime;
+            playlist.Schedule.EndTime = request.Schedule.EndTime;
+            playlist.Schedule.DaysOfWeek = request.Schedule.DaysOfWeek;
+            playlist.UpdatedAt = DateTime.UtcNow;
+
+            await _repository.UpdateAsync(playlist);
+            return _mapper.Map<PlaylistResponseDto>(playlist);
         }
     }
 }

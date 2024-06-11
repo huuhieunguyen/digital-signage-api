@@ -1,5 +1,6 @@
 using CMS.Data;
 using CMS.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CMS.Repositories
 {
@@ -11,6 +12,28 @@ namespace CMS.Repositories
     {
         public PlaylistRepository(CmsDbContext context) : base(context)
         {
+        }
+
+        public override async Task<Playlist> GetByIdAsync(int id)
+        {
+            return await _context.Set<Playlist>()
+                .Include(p => p.PlaylistLabels)
+                    .ThenInclude(pl => pl.Label)
+                .Include(p => p.PlaylistContentItems)
+                    .ThenInclude(pci => pci.ContentItem)
+                .Include(p => p.Schedule)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public override async Task<IEnumerable<Playlist>> GetAllAsync()
+        {
+            return await _context.Set<Playlist>()
+                .Include(p => p.PlaylistLabels)
+                    .ThenInclude(pl => pl.Label)
+                .Include(p => p.PlaylistContentItems)
+                    .ThenInclude(pci => pci.ContentItem)
+                .Include(p => p.Schedule)
+                .ToListAsync();
         }
     }
 }

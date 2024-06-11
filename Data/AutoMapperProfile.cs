@@ -19,8 +19,6 @@ namespace CMS.Data
                 .ForMember(dest => dest.PlayerLabels, opt
                 => opt.MapFrom(src => src.LabelIds.Select(labelId => new PlayerLabel { LabelId = labelId }).ToList()));
 
-            CreateMap<Label, LabelResponseDto>().ReverseMap();
-
             CreateMap<Schedule, ScheduleResponseDto>().ReverseMap();
             CreateMap<ScheduleCreateRequestDto, Schedule>().ReverseMap();
 
@@ -30,13 +28,19 @@ namespace CMS.Data
             CreateMap<ContentItemUpdateRequestDto, ContentItem>()
                 .ForMember(dest => dest.PlaylistContentItems, opt => opt.Ignore());
 
-            // CreateMap<PlaylistContentItem, PlaylistContentItemDto>().ReverseMap();
-
-            CreateMap<Playlist, PlaylistResponseDto>().ReverseMap();
+            CreateMap<Playlist, PlaylistResponseDto>()
+                .ForMember(dest => dest.ContentItems, opt => opt.MapFrom(src => src.PlaylistContentItems.Select(pci => pci.ContentItem).ToList()))
+                .ForMember(dest => dest.Labels, opt => opt.MapFrom(src => src.PlaylistLabels.Select(pl => pl.Label).ToList()))
+                .ForMember(dest => dest.Schedule, opt => opt.MapFrom(src => src.Schedule));
             CreateMap<PlaylistCreateRequestDto, Playlist>()
-                .ForMember(dest => dest.PlaylistContentItems, opt => opt.Ignore())
-                .ForMember(dest => dest.PlaylistLabels, opt => opt.Ignore())
-                .ForMember(dest => dest.Schedules, opt => opt.Ignore());
+                .ForMember(dest => dest.PlaylistLabels, opt => opt.MapFrom(src => src.LabelIds.Select(labelId => new PlaylistLabel { LabelId = labelId }).ToList()))
+                .ForMember(dest => dest.PlaylistContentItems, opt => opt.MapFrom(src => src.ContentItemIds.Select(contentItemId => new PlaylistContentItem { ContentItemId = contentItemId }).ToList()))
+                .ForMember(dest => dest.Schedule, opt => opt.MapFrom(src => new Schedule { StartTime = src.Schedule.StartTime, EndTime = src.Schedule.EndTime, DaysOfWeek = src.Schedule.DaysOfWeek }));
+
+            // CreateMap<PlaylistCreateRequestDto, Playlist>()
+            //     .ForMember(dest => dest.PlaylistContentItems, opt => opt.Ignore())
+            //     .ForMember(dest => dest.PlaylistLabels, opt => opt.Ignore())
+            //     .ForMember(dest => dest.Schedule, opt => opt.Ignore());
 
             CreateMap<Label, LabelResponseDto>().ReverseMap();
             CreateMap<LabelCreateRequestDto, Label>()

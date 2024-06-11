@@ -39,7 +39,7 @@ namespace CMS.Repositories
             return await _context.Set<Player>()
                 .Include(p => p.PlayerLabels)
                 .ThenInclude(pl => pl.Label)
-                .FirstOrDefaultAsync(p => p.Id == entity.Id); ;
+                .FirstOrDefaultAsync(p => p.Id == entity.Id);
         }
     }
 }
