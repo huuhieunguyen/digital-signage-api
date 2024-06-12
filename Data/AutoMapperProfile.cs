@@ -13,8 +13,8 @@ namespace CMS.Data
         public AutoMapperProfile()
         {
             CreateMap<Player, PlayerResponseDto>()
-                .ForMember(dest => dest.Labels, opt
-                => opt.MapFrom(src => src.PlayerLabels.Select(pl => pl.Label).ToList()));
+                .ForMember(dest => dest.Labels, opt => opt.MapFrom(src => src.PlayerLabels.Select(pl => pl.Label).ToList()))
+                .ForMember(dest => dest.Playlists, opt => opt.Ignore()); // We'll handle this manually
             CreateMap<PlayerCreateRequestDto, Player>()
                 .ForMember(dest => dest.PlayerLabels, opt
                 => opt.MapFrom(src => src.LabelIds.Select(labelId => new PlayerLabel { LabelId = labelId }).ToList()));
@@ -27,6 +27,7 @@ namespace CMS.Data
                 .ForMember(dest => dest.PlaylistContentItems, opt => opt.Ignore());
             CreateMap<ContentItemUpdateRequestDto, ContentItem>()
                 .ForMember(dest => dest.PlaylistContentItems, opt => opt.Ignore());
+            CreateMap<ContentItem, ContentItemSummaryDto>();
 
             CreateMap<Playlist, PlaylistResponseDto>()
                 .ForMember(dest => dest.ContentItems, opt => opt.MapFrom(src => src.PlaylistContentItems.Select(pci => pci.ContentItem).ToList()))
@@ -37,10 +38,8 @@ namespace CMS.Data
                 .ForMember(dest => dest.PlaylistContentItems, opt => opt.MapFrom(src => src.ContentItemIds.Select(contentItemId => new PlaylistContentItem { ContentItemId = contentItemId }).ToList()))
                 .ForMember(dest => dest.Schedule, opt => opt.MapFrom(src => new Schedule { StartTime = src.Schedule.StartTime, EndTime = src.Schedule.EndTime, DaysOfWeek = src.Schedule.DaysOfWeek }));
 
-            // CreateMap<PlaylistCreateRequestDto, Playlist>()
-            //     .ForMember(dest => dest.PlaylistContentItems, opt => opt.Ignore())
-            //     .ForMember(dest => dest.PlaylistLabels, opt => opt.Ignore())
-            //     .ForMember(dest => dest.Schedule, opt => opt.Ignore());
+            CreateMap<Playlist, PlaylistSummaryDto>()
+                .ForMember(dest => dest.ContentItems, opt => opt.MapFrom(src => src.PlaylistContentItems.Select(pci => pci.ContentItem).ToList()));
 
             CreateMap<Label, LabelResponseDto>().ReverseMap();
             CreateMap<LabelCreateRequestDto, Label>()

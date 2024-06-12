@@ -1,4 +1,5 @@
 using CMS.DTOs.LabelDtos;
+using CMS.DTOs.PlaylistDtos;
 
 namespace CMS.DTOs.PlayerDtos
 {
@@ -15,6 +16,6 @@ namespace CMS.DTOs.PlayerDtos
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public List<LabelResponseDto> Labels { get; set; }
-        // public ICollection<PlayerLabelDto> Labels { get; set; }
+        public List<PlaylistSummaryDto> Playlists { get; set; }
     }
 }
