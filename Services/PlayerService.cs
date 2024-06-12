@@ -8,7 +8,7 @@ namespace CMS.Services
 {
     public interface IPlayerService : IBaseService<PlayerResponseDto, PlayerCreateRequestDto>
     {
-        // Task<PlayerResponseDto> GetPlayerWithDetailsAsync(int id);
+        Task<List<PlayerResponseDto>> GetPlayersByLabelNameAsync(string labelName);
     }
 
     public class PlayerService : BaseService<Player, PlayerResponseDto, PlayerCreateRequestDto>, IPlayerService
@@ -36,6 +36,12 @@ namespace CMS.Services
             response.Playlists = _mapper.Map<List<PlaylistSummaryDto>>(playlists);
 
             return response;
+        }
+
+        public async Task<List<PlayerResponseDto>> GetPlayersByLabelNameAsync(string labelName)
+        {
+            var players = await _playerRepository.GetPlayersByLabelNameAsync(labelName);
+            return _mapper.Map<List<PlayerResponseDto>>(players);
         }
 
         public override async Task<PlayerResponseDto> CreateAsync(PlayerCreateRequestDto request)

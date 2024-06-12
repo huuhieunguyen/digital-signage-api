@@ -6,6 +6,7 @@ namespace CMS.Repositories
 {
     public interface IPlaylistRepository : IBaseRepository<Playlist>
     {
+        Task<List<Playlist>> GetPlaylistsByLabelNameAsync(string labelName);
     }
 
     public class PlaylistRepository : BaseRepository<Playlist>, IPlaylistRepository
@@ -33,6 +34,18 @@ namespace CMS.Repositories
                 .Include(p => p.PlaylistContentItems)
                     .ThenInclude(pci => pci.ContentItem)
                 .Include(p => p.Schedule)
+                .ToListAsync();
+        }
+
+        public async Task<List<Playlist>> GetPlaylistsByLabelNameAsync(string labelName)
+        {
+            return await _context.Set<Playlist>()
+                .Include(p => p.PlaylistLabels)
+                    .ThenInclude(pl => pl.Label)
+                .Include(p => p.PlaylistContentItems)
+                    .ThenInclude(pci => pci.ContentItem)
+                .Include(p => p.Schedule)
+                .Where(p => p.PlaylistLabels.Any(pl => pl.Label.Name == labelName))
                 .ToListAsync();
         }
     }

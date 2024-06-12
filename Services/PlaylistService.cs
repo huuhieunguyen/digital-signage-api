@@ -11,6 +11,7 @@ namespace CMS.Services
 {
     public interface IPlaylistService : IBaseService<PlaylistResponseDto, PlaylistCreateRequestDto>
     {
+        Task<List<PlaylistResponseDto>> GetPlaylistsByLabelNameAsync(string labelName);
     }
 
     public class PlaylistService : BaseService<Playlist, PlaylistResponseDto, PlaylistCreateRequestDto>, IPlaylistService
@@ -21,6 +22,12 @@ namespace CMS.Services
         : base(repository, mapper)
         {
             _playlistRepository = repository;
+        }
+
+        public async Task<List<PlaylistResponseDto>> GetPlaylistsByLabelNameAsync(string labelName)
+        {
+            var playlists = await _playlistRepository.GetPlaylistsByLabelNameAsync(labelName);
+            return _mapper.Map<List<PlaylistResponseDto>>(playlists);
         }
 
         public override async Task<PlaylistResponseDto> CreateAsync(PlaylistCreateRequestDto request)

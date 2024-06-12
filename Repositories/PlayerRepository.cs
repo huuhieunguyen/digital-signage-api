@@ -7,6 +7,7 @@ namespace CMS.Repositories
     public interface IPlayerRepository : IBaseRepository<Player>
     {
         Task<List<Playlist>> GetPlaylistsByPlayerLabelsAsync(int playerId);
+        Task<List<Player>> GetPlayersByLabelNameAsync(string labelName);
     }
 
     public class PlayerRepository : BaseRepository<Player>, IPlayerRepository
@@ -42,6 +43,15 @@ namespace CMS.Repositories
                 .Where(pl => pl.PlaylistLabels.Any(l => playerLabels.Contains(l.LabelId)))
                 .Include(pl => pl.PlaylistContentItems)
                 .ThenInclude(pci => pci.ContentItem)
+                .ToListAsync();
+        }
+
+        public async Task<List<Player>> GetPlayersByLabelNameAsync(string labelName)
+        {
+            return await _context.Set<Player>()
+                .Include(p => p.PlayerLabels)
+                    .ThenInclude(pl => pl.Label)
+                .Where(p => p.PlayerLabels.Any(pl => pl.Label.Name == labelName))
                 .ToListAsync();
         }
 
