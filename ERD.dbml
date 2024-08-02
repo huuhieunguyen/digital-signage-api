@@ -1,0 +1,108 @@
+Table users {
+    Id int [pk]
+    FirstName string
+    LastName string
+    Email string
+    Password string
+    Role string
+    Token string
+    RefreshToken string
+    RefreshTokenExpiryTime datetime
+    ProfilePicture string
+    PhoneNumber string
+    Address string
+    City string
+    Country string
+    CreatedAt datetime [default: `now()`]
+    UpdatedAt datetime [default: `now()`]
+}
+
+Table label_users {
+    LabelId int [pk, ref: > labels.Id]
+    UserId int [pk, ref: > users.Id]
+    CreatedAt datetime [default: `now()`]
+    UpdatedAt datetime [default: `now()`]
+}
+
+Table devices {
+    Id int [pk]
+    Otp_code string
+    CreatedAt datetime [default: `now()`]
+    UpdatedAt datetime [default: `now()`]
+}
+
+Table content_items {
+    Id int [pk]
+    UserId int [ref: > users.Id]
+    Title string
+    Description string
+    FilePath string
+    Duration int [note: "default: 10"]
+    Width int
+    Height int
+    Dimensions string
+    CreatedAt datetime [default: `now()`]
+    UpdatedAt datetime [default: `now()`]
+    ResourceType string [note: "enum: 'Image, Video'"]
+}
+
+Table labels {
+    Id int [pk]
+    Name string
+    CreatedAt datetime [default: `now()`]
+    UpdatedAt datetime [default: `now()`]
+}
+
+Table players {
+    Id int [pk]
+    UserId int [ref: > users.Id]
+    Name string
+    Location string
+    LastActiveDateTime datetime
+    IPAddress string
+    VirtualUrl string
+    Resolution string
+    Orientation string
+    CreatedAt datetime [default: `now()`]
+    UpdatedAt datetime [default: `now()`]
+}
+
+Table playerLabels {
+    PlayerId int [pk, ref: > players.Id]
+    LabelId int [pk, ref: > labels.Id]
+    CreatedAt datetime [default: `now()`]
+    UpdatedAt datetime [default: `now()`]
+}
+
+Table playlists {
+    Id int [pk]
+    UserId int [ref: > users.Id]
+    Title string
+    Enabled bool
+    CreatedAt datetime [default: `now()`]
+    UpdatedAt datetime [default: `now()`]
+}
+
+Table playlist_content_items {
+    PlaylistId int [pk, ref: > playlists.Id]
+    ContentItemId int [pk, ref: > content_items.Id]
+    CreatedAt datetime [default: `now()`]
+    UpdatedAt datetime [default: `now()`]
+}
+
+Table playlist_labels {
+    PlaylistId int [pk, ref: > playlists.Id]
+    LabelId int [pk, ref: > labels.Id]
+    CreatedAt datetime [default: `now()`]
+    UpdatedAt datetime [default: `now()`]
+}
+
+Table schedules {
+    Id int [pk]
+    StartTime datetime
+    EndTime datetime
+    DaysOfWeek string
+    CreatedAt datetime [default: `now()`]
+    UpdatedAt datetime [default: `now()`]
+    PlaylistId int [ref: > playlists.Id]
+}
